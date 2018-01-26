@@ -66,6 +66,18 @@
                 <label name="patient_marital_status">Marital Status</label>
                 <input type="text" class="form-control" v-model="patient.marital_status" id="patient_marital_status" required>
             </div>
+            <div class="form-group">
+                <label name="patient_marital_status">Marital Status</label>
+                <input type="text" class="form-control" v-model="patient.marital_status" id="patient_marital_status" required>
+                <div v-if="!image">
+    <h2>Select an image</h2>
+    <input type="file" @change="onFileChange">
+  </div>
+  <div v-else>
+    <img :src="image" />
+    <button @click="removeImage">Remove image</button>
+  </div>
+            </div>
 
             <div class="form-group">
                 <button class="btn btn-primary">Create</button>
@@ -83,11 +95,33 @@
         data(){
             return{
                 patient:{},
-                notifications:[]
+                notifications:[],
+                image:''
             }
         },
 
         methods: {
+        onFileChange(e) {
+    var files = e.target.files || e.dataTransfer.files;
+    if (!files.length)
+      return;
+    this.createImage(files[0]);
+  },
+  createImage(file) {
+    var image = new Image();
+    var reader = new FileReader();
+    var vm = this;
+
+    reader.onload = (e) => {
+      vm.image = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  },
+  removeImage: function (e) {
+    this.image = '';
+  },
+
+
             addpatient: function()
             {
                 // Validation
@@ -102,7 +136,7 @@
                 } else {
                     this.patient.age = this.patient.age;
                 }
-                  this.patient.profile_img = "";
+                  this.patient.profile_img = this.image;
                   var qs = require('qs');
                 axios.post('http://localhost:3000/api/patients', qs.stringify(this.patient),
                       ).then((response) => {

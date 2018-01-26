@@ -44,6 +44,7 @@
                     <td>{{ patients.phone }}</td>
                     <td>{{ patients.communication }}</td>
                     <td>{{ patients.marital_status }}</td>
+                    <td><img :src="liveImg(patients.id)"></td>
                     <td>
                         <router-link :to="{name: 'edit_patients', params: { id: patients.id }}" class="btn btn-primary">Edit</router-link>
                         <router-link :to="{name: 'delete_patients', params: { id: patients.id }}" class="btn btn-danger">Delete</router-link>
@@ -64,13 +65,25 @@
                 patientsearch: ''
             }
         },
-
         created: function()
         {
             this.fetchpatientsData();
         },
 
         methods: {
+        liveImg: function($id) {
+          for(var i = 0; i < this.patients.length; i++)
+          {
+              if(this.patients[i].id == $id)
+              {
+                return `${this.patients[i].profile_img}`
+
+              }
+          }
+
+
+
+         },
             fetchpatientsData: function()
             {
                 this.$http.get('http://localhost:3000/api/patients').then((response) => {
@@ -87,23 +100,22 @@
 
             searchpatients: function()
             {
-                if(this.patientsearch == '')
-                {
-                    this.patients = this.originalpatients;
-                    return;
-                }
+              console.log(this.patientsearch.length)
+                console.log(this.patientsearch.length *1 > 3)
+              if(this.patientsearch.length  > 3){
+                console.log("Inside if condition")
+              var qs = require('qs');
+              this.$http.get('http://localhost:3000/api/patients/search/?q='+this.patientsearch).then((response) => {
+                  this.patients = response.body.data;
+                  this.originalpatients = this.patients;
+              }, (response) => {
 
-                var searchedpatients = [];
-                for(var i = 0; i < this.originalpatients.length; i++)
-                {
-                    var patientsName = this.originalpatients[i]['name'].toLowerCase();
-                    if(patientsName.indexOf(this.patientsearch.toLowerCase()) >= 0)
-                    {
-                        searchedpatients.push(this.originalpatients[i]);
-                    }
-                }
+              });
 
-                this.patients = searchedpatients;
+              }
+              else {
+            this.fetchpatientsData();
+              }
             }
         }
     }
